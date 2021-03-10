@@ -150,6 +150,11 @@ export default class TwilioVideo extends Component {
      * @param {{ participant, room }} dominant participant
      */
     onDominantSpeakerDidChange: PropTypes.func,
+    /**
+     * Callback that is called when camera source changes
+     * @param {{ isBackCamera, error }}
+     */
+    onCameraSwitched: PropTypes.func,
     ...View.propTypes
   }
 
@@ -414,6 +419,11 @@ export default class TwilioVideo extends Component {
       this._eventEmitter.addListener('onDominantSpeakerDidChange', data => {
         if (this.props.onDominantSpeakerDidChange) {
           this.props.onDominantSpeakerDidChange(data)
+        }
+      }),
+      this._eventEmitter.addListener('onCameraSwitched', data => {
+        if (this.props.onCameraSwitched) {
+          this.props.onCameraSwitched(data)
         }
       })
     ]

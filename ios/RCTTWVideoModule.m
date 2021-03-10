@@ -35,6 +35,7 @@ static NSString* cameraInterruptionEnded      = @"cameraInterruptionEnded";
 static NSString* cameraDidStopRunning         = @"cameraDidStopRunning";
 static NSString* statsReceived                = @"statsReceived";
 static NSString* networkQualityLevelsChanged  = @"networkQualityLevelsChanged";
+static NSString* onCameraSwitched  = @"onCameraSwitched";
 
 static const CMVideoDimensions kRCTTWVideoAppCameraSourceDimensions = (CMVideoDimensions){900, 720};
 
@@ -111,7 +112,8 @@ RCT_EXPORT_MODULE();
     cameraInterruptionEnded,
     statsReceived,
     networkQualityLevelsChanged,
-    dominantSpeakerDidChange
+    dominantSpeakerDidChange,
+    onCameraSwitched
   ];
 }
 
@@ -257,7 +259,8 @@ RCT_REMAP_METHOD(setLocalVideoEnabled, enabled:(BOOL)enabled setLocalVideoEnable
 }
 
 RCT_EXPORT_METHOD(flipCamera) {
-    if (self.camera) {
+  NSMutableDictionary *body = [[NSMutableDictionary alloc] init];
+  if (self.camera) {
         AVCaptureDevicePosition position = self.camera.device.position;
         AVCaptureDevicePosition nextPosition = position == AVCaptureDevicePositionFront ? AVCaptureDevicePositionBack : AVCaptureDevicePositionFront;
         BOOL mirror = nextPosition == AVCaptureDevicePositionFront;
@@ -270,9 +273,15 @@ RCT_EXPORT_METHOD(flipCamera) {
                 for (TVIVideoView *renderer in self.localVideoTrack.renderers) {
                     renderer.mirror = mirror;
                 }
+              [body addEntriesFromDictionary:@{ @"isBackCamera" : [NSNumber numberWithBool:nextPosition==AVCaptureDevicePositionBack] }];
+            } else {
+              [body addEntriesFromDictionary:@{ @"error" : @"There was a problem switching camera position" }];
             }
         }];
+  } else {
+    [body addEntriesFromDictionary:@{ @"error" : @"There's no camera available" }];
   }
+  [self sendEventCheckingListenerWithName:onCameraSwitched body:body];
 }
 
 RCT_EXPORT_METHOD(toggleSoundSetup:(BOOL)speaker) {
