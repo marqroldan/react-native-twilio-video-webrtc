@@ -277,11 +277,14 @@ RCT_EXPORT_METHOD(flipCamera) {
             } else {
               [body addEntriesFromDictionary:@{ @"error" : @"There was a problem switching camera position" }];
             }
+
+            [self sendEventCheckingListenerWithName:onCameraSwitched body:body];
         }];
   } else {
     [body addEntriesFromDictionary:@{ @"error" : @"There's no camera available" }];
+
+    [self sendEventCheckingListenerWithName:onCameraSwitched body:body];
   }
-  [self sendEventCheckingListenerWithName:onCameraSwitched body:body];
 }
 
 RCT_EXPORT_METHOD(toggleSoundSetup:(BOOL)speaker) {
